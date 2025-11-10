@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 # Install dependencies
 RUN apt-get update && \
-    apt-get install -y git ffmpeg libsndfile1 && \
+    apt-get install -y git ffmpeg libsndfile1 build-essential python3-dev && \
     apt-get clean
 
 # Set workdir
