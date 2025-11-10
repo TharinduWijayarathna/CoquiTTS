@@ -8,21 +8,34 @@ tts = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False,
 
 @app.route("/speak", methods=["POST"])
 def speak():
-    data = request.get_json()
-    text = data.get("text")
-    if not text:
-        return jsonify({"error": "Missing 'text' in request body"}), 400
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON or missing Content-Type: application/json"}), 400
+        
+        text = data.get("text")
+        if not text:
+            return jsonify({"error": "Missing 'text' in request body"}), 400
 
-    output_path = f"output_{uuid.uuid4().hex}.wav"
-    tts.tts_to_file(text=text, file_path=output_path)
-    
-    response = send_file(output_path, mimetype="audio/wav")
-    
-    @response.call_on_close
-    def cleanup():
-        os.remove(output_path)
+        output_path = f"output_{uuid.uuid4().hex}.wav"
+        
+        try:
+            tts.tts_to_file(text=text, file_path=output_path)
+        except Exception as e:
+            if os.path.exists(output_path):
+                os.remove(output_path)
+            return jsonify({"error": f"TTS generation failed: {str(e)}"}), 500
+        
+        response = send_file(output_path, mimetype="audio/wav", as_attachment=False)
+        
+        @response.call_on_close
+        def cleanup():
+            if os.path.exists(output_path):
+                os.remove(output_path)
 
-    return response
+        return response
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 @app.route("/", methods=["GET"])
 def index():
