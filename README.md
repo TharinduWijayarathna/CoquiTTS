@@ -22,7 +22,7 @@ A Flask-based REST API for text-to-speech conversion using Coqui TTS. This servi
 
 1. Clone this repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/TharinduWijayarathna/CoquiTTS.git
 cd CoquiTTS
 ```
 
